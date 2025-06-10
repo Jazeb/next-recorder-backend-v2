@@ -13,6 +13,7 @@ ffmpeg.setFfprobePath('/opt/homebrew/bin/ffprobe');
 @Injectable()
 export class S3BucketService {
   private s3Client: S3;
+  private readonly R2_PUBLIC_URL = 'https://pub-f62e5f93f8cd4c6fa9584c4bd174c8ec.r2.dev';
 
   constructor(
     @InjectModel(Collections.files)
@@ -22,16 +23,10 @@ export class S3BucketService {
   async setupAwsClient(): Promise<void> {
     try {
       if (this.s3Client === undefined) {
-        const { AWS_ACCESS_KEY, AWS_SECRET_KEY, S3_BUCKET } = process.env;
-        if (!AWS_ACCESS_KEY || !AWS_SECRET_KEY || !S3_BUCKET) {
-          throw new HttpException(
-            'Missing required AWS environment variables to proceed.',
-            HttpStatus.BAD_REQUEST,
-          );
-        }
         this.s3Client = new S3({
-          accessKeyId: AWS_ACCESS_KEY,
-          secretAccessKey: AWS_SECRET_KEY,
+          endpoint: this.R2_PUBLIC_URL,
+          signatureVersion: 'v4',
+          region: 'auto'
         });
       }
     } catch (error) {
@@ -57,7 +52,7 @@ export class S3BucketService {
           mime.lookup(originalname) || 'application/octet-stream';
         return this.uploadFileToS3(
           buffer,
-          process.env.S3_BUCKET,
+          'public',
           originalname,
           fileMimeType,
           directory,
@@ -123,7 +118,7 @@ export class S3BucketService {
       const bucketPayload = await this.s3Client.upload(params).promise();
       return {
         ...bucketPayload,
-        url: `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${bucketPayload.Key}`,
+        url: `${this.R2_PUBLIC_URL}/${bucketPayload.Key}`,
       } as IFileUploadResponse;
     } catch (error) {
       console.error(`Error uploading file ${name}:`, error.message);
@@ -135,7 +130,7 @@ export class S3BucketService {
     try {
       await this.setupAwsClient();
       const params: S3.GetObjectRequest = {
-        Bucket: process.env.S3_BUCKET,
+        Bucket: 'public',
         Key: key,
       };
       return await this.s3Client.getObject(params).promise();
@@ -155,7 +150,7 @@ export class S3BucketService {
     try {
       await this.setupAwsClient();
       const params: S3.GetObjectRequest = {
-        Bucket: process.env.S3_BUCKET,
+        Bucket: 'public',
         Key: key,
       };
 
@@ -166,7 +161,7 @@ export class S3BucketService {
           Expires: expiresIn,
         },
       );
-      return presignedUrl.replace('https://s3.amazonaws.com/', 'https://');
+      return presignedUrl;
     } catch (error) {
       console.error(
         `Error generating presigned URL for key ${key}:`,
