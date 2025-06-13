@@ -11,6 +11,7 @@ interface UserInterface {
   billingCardNumber: string;
   billingCardExpiry: string;
   billingCardCvc: string;
+  stripeCustomerId: string;
 }
 
 interface FolderInterface {
@@ -79,12 +80,13 @@ export interface CardDetails {
 
 interface PaymentsInterface {
   userId: string;
+  stripeCustomerId: string;
+  stripeSubscriptionId: string;
+  plan: 'BASIC' | 'STANDARD' | 'PROFESSIONAL';
+  status: 'active' | 'canceled' | 'past_due' | 'unpaid';
+  currentPeriodEnd: Date;
   createdAt: Date;
   updatedAt: Date;
-  paymentIntentId: string;
-  amount: string;
-  currency: string;
-  cardDetails: CardDetails;
 }
 
 export {

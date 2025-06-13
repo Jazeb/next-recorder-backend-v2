@@ -5,6 +5,9 @@ import {
   HttpStatus,
   Post,
   UseGuards,
+  Headers,
+  RawBodyRequest,
+  Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/guards/auth.guard';
@@ -13,21 +16,25 @@ import { IAuthTokenResponse } from 'src/types/types';
 import { CreatePaymentDto } from 'src/dtos/dto';
 import { PaymentsInterface } from 'src/interfaces/interfaces';
 import { PaymentsService } from 'src/services/payments.service';
+import { Request } from 'express';
+
 @ApiTags('Payments')
 @Controller('payments')
 @ApiBearerAuth()
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.CREATED)
-  @Post('create')
-  async createPaymentRecord(
-    @Body() payload: CreatePaymentDto,
-    @SignedInUser() { userId }: IAuthTokenResponse,
-  ): Promise<PaymentsInterface> {
+  @Post('webhook')
+  @HttpCode(HttpStatus.OK)
+  async handleWebhook(
+    @Req() request: RawBodyRequest<Request>,
+    @Headers('stripe-signature') signature: string,
+  ) {
     try {
-      return await this.paymentsService.createPaymentRecord(payload, userId);
+      return await this.paymentsService.handleWebhookEvent(
+        request.rawBody,
+        signature,
+      );
     } catch (error) {
       throw error;
     }

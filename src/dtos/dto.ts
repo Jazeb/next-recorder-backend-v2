@@ -180,7 +180,7 @@ class UpdateFileNamePayload {
   name: string;
 }
 
-class CardDetailsDto {
+export class CardDetailsDto {
   @ApiProperty({ type: 'string' })
   @IsString()
   @IsNotEmpty()
