@@ -6,6 +6,8 @@ import { Collections } from 'src/constants';
 import { PaymentSchema } from '../../schemas/payment.schema';
 import { UserSchema } from 'src/schemas/users.schema';
 import { StripeService } from 'src/services/stripe.service';
+import { ConfigService } from '@nestjs/config';
+import { SubscriptionService } from 'src/services/subscription.service';
 
 @Module({
   imports: [
@@ -15,6 +17,6 @@ import { StripeService } from 'src/services/stripe.service';
     ]),
   ],
   controllers: [PaymentsController],
-  providers: [PaymentsService, StripeService],
+  providers: [PaymentsService, StripeService ,SubscriptionService, ConfigService],
 })
 export class PaymentsModule {}
