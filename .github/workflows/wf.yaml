@@ -1,0 +1,51 @@
+name: Deploy Next Recorder Backend on AWS EC2
+
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build app
+      run: npm run build
+
+    - name: Create SSH key
+      run: |
+        echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
+        chmod 600 ec2_key.pem
+
+    - name: Upload entire project to EC2
+      run: |
+        rsync -avz --delete \
+          --exclude='node_modules' \
+          --exclude='.git' \
+          --exclude='.github' \
+          --exclude='deploy_temp' \
+          -e "ssh -i ec2_key.pem -o StrictHostKeyChecking=no" \
+          ./ \
+          ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ secrets.DEPLOY_PATH }}/
+
+    - name: Install production deps & restart app on EC2
+      run: |
+        ssh -i ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'bash -s' << 'EOF'
+          cd ${{ secrets.DEPLOY_PATH }}
+          aws s3 cp s3://next-recorder/backend/env_vars/dev/.env .
+          npm install --prod
+          pm2 restart main || pm2 start dist/main.js --name main
+          pm2 save
+        EOF
