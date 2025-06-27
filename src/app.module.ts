@@ -14,6 +14,7 @@ import { CommentsModule } from './components/comments/comments.module';
 import { ReportsModule } from './components/reports/reports.module';
 import { PaymentsModule } from './components/payments/payments.module';
 import { DashboardModule } from './components/dashboard/dashboard.module';
+import { S3Module } from './components/s3/s3.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { DashboardModule } from './components/dashboard/dashboard.module';
     ReportsModule,
     PaymentsModule,
     DashboardModule,
+    S3Module,
   ],
   providers: [
     {

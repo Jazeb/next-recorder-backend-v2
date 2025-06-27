@@ -245,6 +245,89 @@ class CreatePaymentDto {
   cardDetails: CardDetailsDto;
 }
 
+// S3 Multipart Upload DTOs
+class InitMultipartUploadDto {
+  @ApiProperty({ type: 'string', description: 'File name' })
+  @IsString()
+  @IsNotEmpty()
+  fileName: string;
+
+  @ApiProperty({ type: 'string', description: 'File MIME type' })
+  @IsString()
+  @IsNotEmpty()
+  contentType: string;
+
+  @ApiProperty({ type: 'string', description: 'Directory path', required: false })
+  @IsString()
+  directory?: string;
+
+  @ApiProperty({ type: 'string', description: 'Folder ID', required: false })
+  @IsString()
+  folderId?: string;
+}
+
+class GetPresignedUrlDto {
+  @ApiProperty({ type: 'string', description: 'Upload ID from init response' })
+  @IsString()
+  @IsNotEmpty()
+  uploadId: string;
+
+  @ApiProperty({ type: 'string', description: 'File key from init response' })
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @ApiProperty({ type: 'number', description: 'Part number (1-based)' })
+  @IsNumber()
+  @IsNotEmpty()
+  partNumber: number;
+}
+
+class CompleteMultipartUploadDto {
+  @ApiProperty({ type: 'string', description: 'Upload ID from init response' })
+  @IsString()
+  @IsNotEmpty()
+  uploadId: string;
+
+  @ApiProperty({ type: 'string', description: 'File key from init response' })
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @ApiProperty({ 
+    type: 'array', 
+    items: { 
+      type: 'object',
+      properties: {
+        ETag: { type: 'string' },
+        PartNumber: { type: 'number' }
+      }
+    },
+    description: 'Array of uploaded parts with ETags and part numbers'
+  })
+  @IsNotEmpty()
+  parts: Array<{ ETag: string; PartNumber: number }>;
+
+  @ApiProperty({ type: 'string', description: 'Original file name' })
+  @IsString()
+  @IsNotEmpty()
+  fileName: string;
+
+  @ApiProperty({ type: 'string', description: 'File MIME type' })
+  @IsString()
+  @IsNotEmpty()
+  contentType: string;
+
+  @ApiProperty({ type: 'number', description: 'File size in bytes' })
+  @IsNumber()
+  @IsNotEmpty()
+  fileSize: number;
+
+  @ApiProperty({ type: 'string', description: 'Folder ID', required: false })
+  @IsString()
+  folderId?: string;
+}
+
 export {
   CreateFolderDto,
   LoginDto,
@@ -257,4 +340,7 @@ export {
   CreateNewComment,
   UpdateFileNamePayload,
   CreatePaymentDto,
+  InitMultipartUploadDto,
+  GetPresignedUrlDto,
+  CompleteMultipartUploadDto,
 };

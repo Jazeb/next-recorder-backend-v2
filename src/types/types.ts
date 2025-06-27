@@ -35,4 +35,31 @@ type SignedInUserType = {
   email: string;
 };
 
-export { IAuthTokenResponse, IFileUploadResponse, Folder, SignedInUserType };
+// S3 Multipart Upload Types
+type IInitMultipartUploadResponse = {
+  uploadId: string;
+  key: string;
+  bucket: string;
+};
+
+type IGetPresignedUrlResponse = {
+  presignedUrl: string;
+  expiresIn: number;
+};
+
+type ICompleteMultipartUploadResponse = {
+  fileId: string;
+  fileName: string;
+  fileUrl: string;
+  key: string;
+};
+
+export { 
+  IAuthTokenResponse, 
+  IFileUploadResponse, 
+  Folder, 
+  SignedInUserType,
+  IInitMultipartUploadResponse,
+  IGetPresignedUrlResponse,
+  ICompleteMultipartUploadResponse
+};
